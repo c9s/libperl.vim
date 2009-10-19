@@ -1,4 +1,5 @@
 
 install:
-	rsync -ruv autoload/  ~/.vim/autoload/
+	mkdir -p ~/.vim/autoload/
+	cp autoload/libperl.vim  ~/.vim/autoload/
 
