@@ -1,6 +1,14 @@
-
 " vim:fdm=syntax:fdl=0:
-" let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+"
+" libperl.vim
+"    standard vim functions for perl code
+"
+" Author: Cornelius (c9s) (Yo-An Lin)
+" Web:    http://oulixe.us
+" Github: http://github.com/c9s
+" Mail:   cornelius.howl@DELETE-ME.gmail.com
+"
+
 let g:libperl#lib_version = 0.2
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
