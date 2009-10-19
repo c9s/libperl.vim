@@ -1,6 +1,7 @@
 
 " vim:fdm=syntax:fdl=0:
 " let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
+let g:libperl#lib_version = 0.2
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 fun! libperl#echo(msg)
@@ -28,7 +29,7 @@ endf
 fun! libperl#TabGotoModuleFileInPaths(mod)
   let paths = libperl#GetPerlLibPaths()
   let fname = libperl#TranslateModuleName( a:mod )
-  let methodname = libperl#GetCursorMethodName()
+  let methodname = libperl#get_cursor_method_name()
   let path = libperl#GetModuleFilePath( a:mod )
   if filereadable( path ) 
     call TabGotoFile( path , methodname ) 
@@ -62,11 +63,11 @@ fun! libperl#GotoModule()
   call libperl#GotoModuleFileInPaths( getline('.') )
 endf
 
-fun! libperl#GetCursorModuleName()
+fun! libperl#get_cursor_module_name()
   return matchstr( expand("<cWORD>") , g:libperl#pkg_token_pattern )
 endf
 
-fun! libperl#GetCursorMethodName()
+fun! libperl#get_cursor_method_name()
   let cw = expand("<cWORD>")
   let m = substitute( cw , '.\{-}\([a-zA-Z0-9_:]\+\)->\(\w\+\).*$' , '\2' , '' )
   if m != cw 
@@ -75,7 +76,7 @@ fun! libperl#GetCursorMethodName()
   return
 endf
 
-fun! libperl#GotoFile(fullpath,method)
+fun! libperl#goto_file(fullpath,method)
   execute ':e ' . a:fullpath
   if strlen(a:method) > 0
     call search( '^sub\s\+' . a:method . '\s' , '', 0 )
@@ -83,30 +84,30 @@ fun! libperl#GotoFile(fullpath,method)
   return 1
 endf
 
-fun! libperl#TabGotoModuleFileFromCursor()
-  call libperl#TabGotoModuleFileInPaths( libperl#GetCursorModuleName() )
+fun! libperl#tab_goto_module_file_from_cursor()
+  call libperl#TabGotoModuleFileInPaths( libperl#get_cursor_module_name() )
 endf
 
 fun! libperl#GotoModuleFileInPaths(mod)
   let paths = libperl#GetPerlLibPaths()
   let fname = libperl#TranslateModuleName( a:mod )
-  let methodname = libperl#GetCursorMethodName()
+  let methodname = libperl#get_cursor_method_name()
   call insert(paths, 'lib/' )
   for p in paths 
     let fullpath = p . '/' . fname
-    if filereadable( fullpath ) && libperl#GotoFile( fullpath , methodname ) 
+    if filereadable( fullpath ) && libperl#goto_file( fullpath , methodname ) 
       return
     endif
   endfor
   echomsg "No such module: " . a:mod
 endf
 
-fun! libperl#GetINC()
+fun! libperl#get_inc()
   return system('perl -e ''print join(" ",@INC)'' ')
 endf
 
 fun! libperl#FindPerlPackageFiles()
-  let paths = 'lib ' .  libperl#GetINC()
+  let paths = 'lib ' .  libperl#get_inc()
   let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
         \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
         \ . " | perl -pe 's/^package (.*?);/\$1/' "
@@ -115,11 +116,11 @@ fun! libperl#FindPerlPackageFiles()
 endf
 
 " please defined g:cpan_install_command to install module 
-fun! libperl#InstallCPANModule()
-  exec '!' . g:cpan_install_command . ' ' . libperl#GetCursorModuleName()
+fun! libperl#install_module()
+  exec '!' . g:cpan_install_command . ' ' . libperl#get_cursor_module_name()
 endf
 
-fu! libperl#GetPackageSourceListPath()
+fu! libperl#get_package_sourcelist_path()
   let paths = [ 
         \expand('~/.cpanplus/02packages.details.txt.gz'),
         \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
