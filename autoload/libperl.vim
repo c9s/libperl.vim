@@ -9,7 +9,7 @@
 " Mail:   cornelius.howl@DELETE-ME.gmail.com
 "
 
-let g:libperl#lib_version = 0.2
+let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 fun! libperl#echo(msg)
@@ -275,6 +275,7 @@ fu! libperl#get_currentlib_cpan_module_list(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
     call libperl#echo( "finding packages... from lib/" )
+
     if exists('use_pcre_grep') 
       call system( 'find lib -type f -iname "*.pm" ' 
           \ . " | xargs -I{} grep -Po '(?<=package) [_a-zA-Z0-9:]+' {} "
@@ -285,6 +286,7 @@ fu! libperl#get_currentlib_cpan_module_list(force)
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
           \ . " | sort | uniq > " . cpan_curlib_cache )
     endif
+
     call libperl#echo('cached')
   endif
   return readfile( cpan_curlib_cache )
