@@ -31,14 +31,13 @@
 "     g:cpan_installed_cache : 
 "     g:cpan_cache_expiry : 
  
-
 let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 
 " libperl#echo:
 "   @msg[String]:
-"
+
 fun! libperl#echo(msg)
   redraw
   echomsg a:msg
@@ -47,7 +46,7 @@ endf
 " libperl#get_perl_lib_paths :
 "   @return[List]:
 "       return paths from perl @INC 
-"
+
 fun! libperl#get_perl_lib_paths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
 endf
@@ -56,7 +55,7 @@ endf
 "   @mod[String]: package name
 "   
 "   @return[String: package file path
-"
+
 fun! libperl#get_module_file_path(mod)
   let paths = libperl#get_perl_lib_paths()
   let fname = libperl#translate_module_name( a:mod )
@@ -79,7 +78,7 @@ fun! libperl#tab_open_module_file_in_paths(mod)
   let methodname = libperl#get_cursor_method_name()
   let path = libperl#get_module_file_path( a:mod )
   if filereadable( path ) 
-    call libperl#edit_file( path , methodname ) 
+    call libperl#tab_edit_file( path )
   endif
 endf
 
@@ -154,6 +153,18 @@ endf
  
 fun! libperl#edit_file(fullpath,method)
   execute ':e ' . a:fullpath
+  if strlen(a:method) > 0
+    cal libperl#find_method(a:method)
+  endif
+  return 1
+endf
+
+" libperl#tab_edit_file : 
+"   @fullpath: 
+"   @method: 
+ 
+fun! libperl#tab_edit_file(fullpath,method)
+  execute ':tabe ' . a:fullpath
   if strlen(a:method) > 0
     cal libperl#find_method(a:method)
   endif
