@@ -241,4 +241,9 @@ fun! libperl#use_ok(pkg)
   return out == 'OK'
 endf
 
+" if vim compiled with perl
+if has('perl') 
+
+
+endif
 
