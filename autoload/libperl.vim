@@ -9,6 +9,29 @@
 " Mail:   cornelius.howl@DELETE-ME.gmail.com
 "
 
+" Script Variables:
+" 
+ 
+
+" Global Variables:
+" 
+"     g:libperl#lib_version : 
+"     g:libperl#pkg_token_pattern : 
+"     g:cpan_win_type : 
+"     g:libperl#pkg_token_pattern : 
+"     g:cpan_install_command : 
+"     g:cpan_install_command : 
+"     g:cpan_user_defined_sources : 
+"     g:cpan_user_defined_sources : 
+"     g:cpan_source_cache : 
+"     g:cpan_source_cache : 
+"     g:cpan_source_cache : 
+"     g:cpan_installed_cache : 
+"     g:cpan_installed_cache : 
+"     g:cpan_installed_cache : 
+"     g:cpan_cache_expiry : 
+ 
+
 let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
@@ -91,6 +114,7 @@ endf
 " libperl#open_module : 
  
 fun! libperl#open_module()
+  " XXX: this should not be here.
   if g:cpan_win_type == 'v'
     vertical resize 98
   else
