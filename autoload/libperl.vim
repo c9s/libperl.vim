@@ -12,18 +12,31 @@
 let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
+
+" libperl#echo:
+"   @msg[String]:
+"
 fun! libperl#echo(msg)
   redraw
   echomsg a:msg
 endf
 
-fun! libperl#GetPerlLibPaths()
+" libperl#get_perl_lib_paths:
+"   @return[List]:
+"       return paths from perl @INC 
+"
+fun! libperl#get_perl_lib_paths()
   return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
 endf
 
-fun! libperl#GetModuleFilePath(mod)
-  let paths = libperl#GetPerlLibPaths()
-  let fname = libperl#TranslateModuleName( a:mod )
+" libperl#get_module_file_path:
+"   @mod[String]: package name
+"   
+"   @return[String: package file path
+"
+fun! libperl#get_module_file_path(mod)
+  let paths = libperl#get_perl_lib_paths()
+  let fname = libperl#translate_module_name( a:mod )
   call insert(paths,'lib/')
   for p in paths
     let fullpath = p . '/' . fname
@@ -34,41 +47,45 @@ fun! libperl#GetModuleFilePath(mod)
   return 
 endf
 
-fun! libperl#TabGotoModuleFileInPaths(mod)
-  let paths = libperl#GetPerlLibPaths()
-  let fname = libperl#TranslateModuleName( a:mod )
+
+" libperl#tab_open_module_file_in_paths(mod)
+"
+"
+fun! libperl#tab_open_module_file_in_paths(mod)
+  let paths = libperl#get_perl_lib_paths()
+  let fname = libperl#translate_module_name( a:mod )
   let methodname = libperl#get_cursor_method_name()
-  let path = libperl#GetModuleFilePath( a:mod )
+  let path = libperl#get_module_file_path( a:mod )
   if filereadable( path ) 
-    call TabGotoFile( path , methodname ) 
+    call libperl#edit_file( path , methodname ) 
   endif
 endf
 
-" translate module name to file path
-fun! libperl#TranslateModuleName(n)
-  return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
-endf
-
-fun! libperl#GotoTagNewTab(tag)
+fun! libperl#tab_open_tag(tag)
   let list = taglist( a:tag )
   if len(list) == 1 | exec 'tab tag ' . a:tag
   else | exec 'tab ts ' . a:tag | endif
 endf
 
-fun! libperl#GotoTag(tag)
+" translate module name to file path
+fun! libperl#translate_module_name(n)
+  return substitute( a:n , '::' , '/' , 'g' ) . '.pm'
+endf
+
+fun! libperl#open_tag(tag)
   resize 60 
   let list = taglist( a:tag )
   if len(list) == 1 | exec ' tag ' . a:tag
   else | exec ' ts ' . a:tag | endif
 endf
 
-fun! libperl#GotoModule()
+fun! libperl#open_module()
   if g:cpan_win_type == 'v'
     vertical resize 98
   else
     resize 60
   endif
-  call libperl#GotoModuleFileInPaths( getline('.') )
+  call libperl#open_module_in_paths( getline('.') )
 endf
 
 fun! libperl#get_cursor_module_name()
@@ -84,26 +101,31 @@ fun! libperl#get_cursor_method_name()
   return
 endf
 
-fun! libperl#goto_file(fullpath,method)
+
+fun! libperl#find_method(method_name)
+  call search( 'sub\s\+\<' . a:method_name . '\>','',0)
+endf
+
+fun! libperl#edit_file(fullpath,method)
   execute ':e ' . a:fullpath
   if strlen(a:method) > 0
-    call search( '^sub\s\+' . a:method . '\s' , '', 0 )
+    cal libperl#find_method(a:method)
   endif
   return 1
 endf
 
-fun! libperl#tab_goto_module_file_from_cursor()
-  call libperl#TabGotoModuleFileInPaths( libperl#get_cursor_module_name() )
+fun! libperl#tab_open_module_from_cursor()
+  call libperl#tab_open_module_file_in_paths( libperl#get_cursor_module_name() )
 endf
 
-fun! libperl#GotoModuleFileInPaths(mod)
-  let paths = libperl#GetPerlLibPaths()
-  let fname = libperl#TranslateModuleName( a:mod )
+fun! libperl#open_module_in_paths(mod)
+  let paths = libperl#get_perl_lib_paths()
+  let fname = libperl#translate_module_name( a:mod )
   let methodname = libperl#get_cursor_method_name()
   call insert(paths, 'lib/' )
   for p in paths 
     let fullpath = p . '/' . fname
-    if filereadable( fullpath ) && libperl#goto_file( fullpath , methodname ) 
+    if filereadable( fullpath ) && libperl#edit_file( fullpath , methodname ) 
       return
     endif
   endfor
@@ -114,7 +136,7 @@ fun! libperl#get_inc()
   return system('perl -e ''print join(" ",@INC)'' ')
 endf
 
-fun! libperl#FindPerlPackageFiles()
+fun! libperl#find_perl_package_files()
   let paths = 'lib ' .  libperl#get_inc()
   let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
         \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
@@ -128,7 +150,7 @@ fun! libperl#install_module()
   exec '!' . g:cpan_install_command . ' ' . libperl#get_cursor_module_name()
 endf
 
-fu! libperl#get_package_sourcelist_path()
+fun! libperl#get_package_sourcelist_path()
   let paths = [ 
         \expand('~/.cpanplus/02packages.details.txt.gz'),
         \expand('~/.cpan/sources/modules/02packages.details.txt.gz')
@@ -220,14 +242,14 @@ fun! libperl#clear_method_comp_base()
 endf
 
 " return [ lnum , col ]
-fu! libperl#get_pkg_comp_start()
+fun! libperl#get_pkg_comp_start()
   return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
 
 
 " return package completion base string
 " for example:   Catalyst::...
-fu! libperl#get_pkg_comp_base()
+fun! libperl#get_pkg_comp_base()
   let col = col('.')
   let [ lnum , coln ] = libperl#get_pkg_comp_start()
   let line = getline('.')
@@ -271,7 +293,7 @@ fun! libperl#get_installed_cpan_module_list(force)
 endf
 
 " Return: current lib/ cpan module list [list]
-fu! libperl#get_currentlib_cpan_module_list(force)
+fun! libperl#get_currentlib_cpan_module_list(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
   if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
     call libperl#echo( "finding packages... from lib/" )
