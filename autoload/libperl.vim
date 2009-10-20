@@ -224,10 +224,21 @@ fu! libperl#get_pkg_comp_start()
   return searchpos( '[^a-zA-Z0-9:_]' , 'bn' , line('.') )
 endf
 
-" return comp base string
+
+" return package completion base string
+" for example:   Catalyst::...
 fu! libperl#get_pkg_comp_base()
   let col = col('.')
   let [ lnum , coln ] = libperl#get_pkg_comp_start()
   let line = getline('.')
   return strpart( getline('.') , coln , col )
 endf
+
+" echo libperl#use_ok('Data::Dumper')
+fun! libperl#use_ok(pkg)
+  let cmd = "perl -M" . a:pkg . ' -e "print q{OK}"'
+  let out = system( cmd )
+  return out == 'OK'
+endf
+
+
