@@ -78,7 +78,7 @@ fun! libperl#tab_open_module_file_in_paths(mod)
   let methodname = libperl#get_cursor_method_name()
   let path = libperl#get_module_file_path( a:mod )
   if filereadable( path ) 
-    call libperl#tab_edit_file( path )
+    call libperl#tab_edit_file( path , methodname )
   endif
 endf
 
