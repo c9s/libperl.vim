@@ -242,8 +242,50 @@ fun! libperl#use_ok(pkg)
 endf
 
 " if vim compiled with perl
-if has('perl') 
 
 
-endif
+" Return: cpan module list [list]
+fun! libperl#get_cpan_module_list(force)
+  if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
+    let path =  libperl#get_package_sourcelist_path()
+    cal libperl#echo("executing zcat: " . path )
+    cal system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
+    cal libperl#echo("cached.")
+  endif
+  return readfile( g:cpan_source_cache )
+endf
 
+" Return: installed cpan module list [list]
+fun! libperl#get_installed_cpan_module_list(force)
+  if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
+    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
+    call libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
+    call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
+          \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
+          \ . " | perl -pe 's/^package (.*?);/\$1/' "
+          \ . " | sort | uniq > " . g:cpan_installed_cache )
+    " sed  's/^package //' | sed 's/;$//'
+    call libperl#echo("ready")
+  endif
+  return readfile( g:cpan_installed_cache )
+endf
+
+" Return: current lib/ cpan module list [list]
+fu! libperl#get_currentlib_cpan_module_list(force)
+  let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
+  if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
+    call libperl#echo( "finding packages... from lib/" )
+    if exists('use_pcre_grep') 
+      call system( 'find lib -type f -iname "*.pm" ' 
+          \ . " | xargs -I{} grep -Po '(?<=package) [_a-zA-Z0-9:]+' {} "
+          \ . " | sort | uniq > " . cpan_curlib_cache )
+    else
+      call system( 'find lib -type f -iname "*.pm" ' 
+          \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+          \ . " | perl -pe 's/^package (.*?);/\$1/' "
+          \ . " | sort | uniq > " . cpan_curlib_cache )
+    endif
+    call libperl#echo('cached')
+  endif
+  return readfile( cpan_curlib_cache )
+endf
