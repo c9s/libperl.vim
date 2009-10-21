@@ -368,11 +368,19 @@ endf
 "   Return: cpan module list [list]
  
 fun! libperl#get_cpan_module_list(force)
-  if ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  ) || a:force
+  if a:force || ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  )
     let path =  libperl#get_package_sourcelist_path()
-    cal libperl#echo("executing zcat: " . path )
-    cal system('zcat ' . path . " | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache )
-    cal libperl#echo("cached.")
+    if filereadable( path ) 
+      cal libperl#echo("executing zcat: " . path )
+      let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache 
+      let out = system( cmd )
+      if out 
+        echoerr out
+      endif
+      cal libperl#echo("cached: " . g:cpan_source_cache )
+    else 
+      echoerr "can not found sources from: " . path
+    endif
   endif
   return readfile( g:cpan_source_cache )
 endf
