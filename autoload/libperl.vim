@@ -430,6 +430,16 @@ fun! libperl#get_currentlib_cpan_module_list(force)
   return readfile( cpan_curlib_cache )
 endf
 
+
+
+" libperl#get_current_lib_package_name 
+"
+fun! libperl#get_current_lib_package_name()
+  let f = expand('%')
+  let pkg = substitute(matchstr(f ,'\(lib/\)\@<=.*\(.pm\)\@='),'/','::','g')
+  return pkg
+endf
+
 " if vim compiled with perl
 if has('perl')
 
