@@ -242,7 +242,9 @@ endf
 "   return a list , each item contains two items : [ class , file ].
 "
 "   @file: 
- 
+
+
+" XXX: er, this script is in cpan.vim , we should note that
 fun! libperl#find_base_classes(file)
   let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl'
   if ! filereadable( script_path )
