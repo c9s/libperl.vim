@@ -35,13 +35,6 @@ let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 
-" libperl#echo:
-"   @msg[String]:
-
-fun! libperl#echo(msg)
-  redraw
-  echomsg a:msg
-endf
 
 " libperl#get_perl_lib_paths :
 "   @return[List]:
@@ -243,10 +236,9 @@ endf
 "
 "   @file: 
 
-
 " XXX: er, this script is in cpan.vim , we should note that
 fun! libperl#find_base_classes(file)
-  let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl'
+  let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl'  "XXX: should be able to be found in $PATH
   if ! filereadable( script_path )
     echoerr 'can not read ' . script_path
     return [ ]
