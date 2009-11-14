@@ -34,7 +34,10 @@
 let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
-
+fun! libperl#echo(msg)
+  redraw
+  echomsg a:msg
+endf
 
 " libperl#get_perl_lib_paths :
 "   @return[List]:
@@ -257,7 +260,8 @@ endf
 "   @file: 
  
 fun! libperl#grep_file_functions(file)
-  let out = system('grep -oP "(?<=^sub )\w+" ' . a:file )
+  "let out = system('grep -oP "(?<=^sub )\w+" ' . a:file )
+  let out = system('grep -oE "?^sub \w+" ' . a:file . " |  sed -e \"s/^sub //\""  )
   return split( out , "\n" )
 endf
 
