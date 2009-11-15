@@ -246,7 +246,13 @@ fun! libperl#find_base_classes(file)
     echoerr 'can not read ' . script_path
     return [ ]
   endif
+
   let out = system('perl ' . script_path . ' ' . a:file)
+  if v:shell_error
+    echo 'syntax error can not parse file:' . a:file
+    return 
+  endif
+
   let classes = [ ]
   for l in split(out,"\n") 
     let [class,refer,path] = split(l,' ')
