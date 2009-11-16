@@ -1,0 +1,17 @@
+=name           libperl.vim
+
+=author         Cornelius
+
+=email          cornelius.howl@gmail.com
+
+=type           autoload
+
+=version_from   vimlib/autoload/libperl.vim
+
+=vim_version    >= 7.2
+
+=dependency
+
+=script
+
+=repository git://....../
