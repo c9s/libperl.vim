@@ -84,7 +84,9 @@ endf
 fun! libperl#tab_open_tag(tag)
   let list = taglist( a:tag )
   if len(list) == 1 | exec 'tab tag ' . a:tag
-  else | exec 'tab ts ' . a:tag | endif
+  else 
+    exec 'tab ts ' . a:tag 
+  endif
 endf
 
 " libperl#translate_module_name : 
@@ -102,8 +104,11 @@ endf
 fun! libperl#open_tag(tag)
   resize 60 
   let list = taglist( a:tag )
-  if len(list) == 1 | exec ' tag ' . a:tag
-  else | exec ' ts ' . a:tag | endif
+  if len(list) == 1 
+    exec ' tag ' . a:tag
+  else 
+    exec ' ts ' . a:tag 
+  endif
 endf
 
 " libperl#open_module : 
