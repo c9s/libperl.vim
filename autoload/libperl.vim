@@ -241,7 +241,7 @@ endf
 
 " XXX: er, this script is in cpan.vim , we should note that
 fun! libperl#find_base_classes(file)
-  let script_path = expand('$HOME') . '/.vim/bin/find_base_classes.pl'  "XXX: should be able to be found in $PATH
+  let script_path = expand('~/.vim/bin/find_base_classes.pl')  "XXX: should be able to be found in $PATH
   if ! filereadable( script_path )
     echoerr 'can not read ' . script_path
     return [ ]
@@ -252,10 +252,10 @@ fun! libperl#find_base_classes(file)
     echo 'syntax error can not parse file:' . a:file
     return 
   endif
-
+  
   let classes = [ ]
   for l in split(out,"\n") 
-    let [class,refer,path] = split(l,' ')
+    let [class,refer,path] = split(l,' ',1)  " 1 for keepempty
     call add(classes,[class,refer,path])
   endfor
   return classes
@@ -282,6 +282,7 @@ fun! libperl#parse_base_class_functions(filepath)
     let class_comp.functions = libperl#grep_file_functions( path )
     call add( result , class_comp )
   endfor
+  echo result
   return result
 endf
 
