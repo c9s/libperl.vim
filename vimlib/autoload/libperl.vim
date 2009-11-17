@@ -401,6 +401,7 @@ endf
 "   Return: cpan module list [list]
 
 let g:cpan_mod_cachef = expand('~/.vim-cpan-module-cache')
+let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
 fun! libperl#get_cpan_module_list(force)
   " check runtime cache
   if a:force == 0 && exists('g:cpan_mod_cache')
@@ -431,12 +432,6 @@ fun! libperl#get_cpan_module_list(force)
   return g:cpan_mod_cache
 endf
 
-" libperl#get_installed_cpan_module_list : 
-"   @force: 
-" 
-"   Return: installed cpan module list [list]
-
-let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
 fun! libperl#get_cpan_installed_module_list(force)
   " check runtime cache
   if a:force == 0 && exists('g:cpan_ins_mod_cache')
@@ -469,34 +464,39 @@ fun! libperl#get_cpan_installed_module_list(force)
   return g:cpan_ins_mod_cache
 endf
 
+" deprecated function
 fun! libperl#get_installed_cpan_module_list(force)
   return libperl#get_cpan_installed_module_list(a:force)
 endf
 
-" libperl#get_currentlib_cpan_module_list : 
-"   @force: 
-" 
-"   Return: current lib/ cpan module list [list]
- 
 fun! libperl#get_currentlib_cpan_module_list(force)
-  let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
-  if ! filereadable( cpan_curlib_cache ) && s:is_expired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
-    call libperl#echo( "finding packages... from lib/" )
+  let cpan_curlib_cachef = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
 
-    if exists('use_pcre_grep') 
-      call system( 'find lib -type f -iname "*.pm" ' 
-          \ . " | xargs -I{} grep -Po '(?<=package) [_a-zA-Z0-9:]+' {} "
-          \ . " | sort | uniq > " . cpan_curlib_cache )
-    else
-      call system( 'find lib -type f -iname "*.pm" ' 
-          \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
-          \ . " | perl -pe 's/^package (.*?);/\$1/' "
-          \ . " | sort | uniq > " . cpan_curlib_cache )
-    endif
-
-    call libperl#echo('cached')
+  if a:force == 0 && exists('g:cpan_curlib_cache') 
+    return g:cpan_curlib_cache
   endif
-  return readfile( cpan_curlib_cache )
+
+  if a:force == 0 && filereadable( cpan_curlib_cachef ) && ! s:is_expired( cpan_curlib_cache , 60 )
+    let g:cpan_curlib_cache = readfile( cpan_curlib_cachef )
+    return g:cpan_curlib_cache
+  endif
+
+  cal libperl#echo( "finding packages... from lib/" )
+
+  if exists('use_pcre_grep') 
+    call system( 'find lib -type f -iname "*.pm" ' 
+        \ . " | xargs -I{} grep -Po '(?<=package) [_a-zA-Z0-9:]+' {} "
+        \ . " | sort | uniq > " . cpan_curlib_cache )
+  else
+    call system( 'find lib -type f -iname "*.pm" ' 
+        \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
+        \ . " | perl -pe 's/^package (.*?);/\$1/' "
+        \ . " | sort | uniq > " . cpan_curlib_cache )
+  endif
+  cal libperl#echo('cached')
+
+  let g:cpan_curlib_cache = readfile( cpan_curlib_cachef )
+  return g:cpan_curlib_cache
 endf
 
 
