@@ -7,7 +7,7 @@
 " Web:    http://oulixe.us
 " Github: http://github.com/c9s
 " Mail:   cornelius.howl@DELETE-ME.gmail.com
-" Version: 0.4
+" Version: 0.5
 
 " Script Variables:
 " 
