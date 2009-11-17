@@ -469,40 +469,50 @@ fun! libperl#get_installed_cpan_module_list(force)
   return libperl#get_cpan_installed_module_list(a:force)
 endf
 
+
+" XXX: windows 
 fun! libperl#get_currentlib_cpan_module_list(force)
-  let cpan_curlib_cachef = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
+  return libperl#get_path_module_list(getcwd().'/lib',a:force)
+endf
 
-  if a:force == 0 && exists('g:cpan_curlib_cache') 
-    return g:cpan_curlib_cache
+fun! libperl#get_path_module_list(path,force)
+  let cache_name = a:path
+  let cache_name =  tolower( substitute( cache_name , '/' , '.' , 'g') )
+  let cpan_path_cachef = expand( '~/.vim' ) . cache_name
+
+  " cache for differnet path
+  if a:force == 0 && exists('g:cpan_path_cache') && exists('g:cpan_path_cache[ a:path ]') 
+    return g:cpan_path_cache[ a:path ]
   endif
 
-  if a:force == 0 && filereadable( cpan_curlib_cachef ) && ! s:is_expired( cpan_curlib_cache , 60 )
-    let g:cpan_curlib_cache = readfile( cpan_curlib_cachef )
-    return g:cpan_curlib_cache
+  if ! exists('g:cpan_path_cache') 
+    let g:cpan_path_cache = { }
   endif
 
-  cal libperl#echo( "finding packages... from lib/" )
+  if a:force == 0 && filereadable( cpan_path_cachef ) && ! s:is_expired( cpan_path_cachef , 60 )
+    let g:cpan_path_cache[ a:path ] = readfile( cpan_path_cachef )
+    return g:cpan_path_cache[ a:path ]
+  endif
+
+  cal libperl#echo( "finding packages... from " . a:path )
 
   if exists('use_pcre_grep') 
-    call system( 'find lib -type f -iname "*.pm" ' 
+    call system( 'find '.a:path.' -type f -iname "*.pm" ' 
         \ . " | xargs -I{} grep -Po '(?<=package) [_a-zA-Z0-9:]+' {} "
-        \ . " | sort | uniq > " . cpan_curlib_cache )
+        \ . " | sort | uniq > " . cpan_path_cachef )
   else
-    call system( 'find lib -type f -iname "*.pm" ' 
+    call system( 'find '.a:path.' -type f -iname "*.pm" ' 
         \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
         \ . " | perl -pe 's/^package (.*?);/\$1/' "
-        \ . " | sort | uniq > " . cpan_curlib_cache )
+        \ . " | sort | uniq > " . cpan_path_cachef )
   endif
   cal libperl#echo('cached')
 
-  let g:cpan_curlib_cache = readfile( cpan_curlib_cachef )
-  return g:cpan_curlib_cache
+  let g:cpan_path_cache[ a:path ] = readfile( cpan_path_cachef )
+  return g:cpan_path_cache[ a:path ]
 endf
 
-
-
 " libperl#get_current_lib_package_name 
-"
 fun! libperl#get_current_lib_package_name()
   let f = expand('%')
   return substitute(matchstr(f ,'\(lib/\)\@<=.*\(.pm\)\@='),'/','::','g')
