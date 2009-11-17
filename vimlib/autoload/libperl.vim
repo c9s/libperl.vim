@@ -488,3 +488,25 @@ endf
 if has('perl')
 
 endif
+
+
+fun! s:list_ok(v)
+  if len(a:v)
+    echomsg 'list ok'
+  else
+    echomsg 'list fail'
+  endif
+endf
+
+fun! s:dict_ok(v)
+  if values(a:v) && keys( a:v )
+    echomsg 'dict ok'
+  else
+    echomsg 'dict fail'
+  endif
+endf
+
+" test code
+" cal s:list_ok( libperl#get_cpan_module_list(0) )
+" cal s:list_ok( libperl#get_cpan_module_list(1) )
+
