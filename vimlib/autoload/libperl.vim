@@ -1,3 +1,4 @@
+
 " vim:fdm=syntax:fdl=0:
 "
 " libperl.vim
@@ -57,9 +58,11 @@ endf
 "       return paths from perl @INC 
 
 fun! libperl#get_perl_lib_paths()
-  let l:path = &path
-  if strlen(l:path) > 1 
-    return split( l:path , ',')
+  if &filetype && &filetype == 'perl'
+    let l:path = &path
+    if strlen(l:path) > 1 
+      return split( l:path , ',')
+    endif
   else
     return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
   endif
@@ -397,21 +400,21 @@ endf
 " 
 "   Return: cpan module list [list]
 
-let g:cpan_module_cache_file = expand('~/.vim-cpan-module-cache')
+let g:cpan_mod_cachef = expand('~/.vim-cpan-module-cache')
 fun! libperl#get_cpan_module_list(force)
   " check runtime cache
-  if a:force == 0 && exists('g:cpan_module_list')
-    return g:cpan_module_list
+  if a:force == 0 && exists('g:cpan_mod_cache')
+    retu g:cpan_mod_cache
   endif
 
   " check file cache if we define a cache filename
-  if exists('g:cpan_module_list_cache_file')
+  if exists('g:cpan_mod_cachef')
         \ && a:force == 0 
-        \ && filereadable(g:cpan_module_cache_file) 
-        \ && ! s:is_expired( g:cpan_module_cache_file , 60 )  " 60 min
+        \ && filereadable(g:cpan_mod_cachef) 
+        \ && ! s:is_expired( g:cpan_mod_cachef , 60 )  " 60 min
 
-      let g:cpan_module_list = readfile( g:cpan_module_cache_file )
-      return g:cpan_module_list
+      let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
+      return g:cpan_mod_cache
   endif
 
   let path =  libperl#get_package_sourcelist_path()
@@ -422,10 +425,10 @@ fun! libperl#get_cpan_module_list(force)
     if v:shell_error 
       echoerr v:shell_error
     endif
-    cal libperl#echo("cached: " . g:cpan_module_cache_file )
+    cal libperl#echo("cached: " . g:cpan_mod_cachef )
   endif
-  let g:cpan_module_list = readfile( g:cpan_module_cache_file )
-  return g:cpan_module_list
+  let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
+  return g:cpan_mod_cache
 endf
 
 " libperl#get_installed_cpan_module_list : 
@@ -433,39 +436,43 @@ endf
 " 
 "   Return: installed cpan module list [list]
 
-let g:cpan_installed_module_list_cache_file = expand('~/.vim-cpan-installed-module-cache')
-fun! libperl#get_installed_cpan_module_list(force)
+let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
+fun! libperl#get_cpan_installed_module_list(force)
   " check runtime cache
-  if a:force == 0 && exists('g:cpan_installed_module_list')
-    return g:cpan_installed_module_list
+  if a:force == 0 && exists('g:cpan_ins_mod_cache')
+    echomsg 'runtime cache'
+    return g:cpan_ins_mod_cache
   endif
 
-  " check file cache if we define a cache filename
-  if exists('g:cpan_installed_module_list_cache_file')
+  if exists('g:cpan_ins_mod_cachef')
         \ && a:force == 0 
-        \ && filereadable(g:cpan_installed_module_list_cache_file) 
-        \ && ! s:is_expired( g:cpan_installed_module_list_cache_file , 60 )  " 60 min
-      " cache it
-      let g:cpan_installed_module_list = readfile( g:cpan_installed_module_list_cache_file )
-      return g:cpan_installed_module_list
+        \ && filereadable( g:cpan_ins_mod_cachef ) 
+        \ && ! s:is_expired( g:cpan_ins_mod_cachef , 60 )
+      let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
+      return g:cpan_ins_mod_cache
   endif
 
   " update cache
-  let path =  libperl#get_package_sourcelist_path()
-  if filereadable( path ) 
-    let paths = 'lib ' . join(libperl#get_perl_lib_paths(),' ')
-    cal libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
-    cal system( 'find ' . paths . ' -type f -iname "*.pm" ' 
-          \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
-          \ . " | perl -pe 's/^package (.*?);/\$1/' "
-          \ . " | sort | uniq > " . g:cpan_installed_module_list_cache_file )
+  let paths = 'lib ' . join(libperl#get_perl_lib_paths(),' ')
+  echo paths
+  sleep 1
+  cal libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
+  cal system( 'find ' . paths . ' -type f -iname "*.pm" ' 
+        \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
+        \ . " | perl -pe 's/^package (.*?);/\$1/' "
+        \ . " | sort | uniq > " . g:cpan_ins_mod_cachef )
 
-    cal libperl#echo("ready")
+  if v:shell_error 
+    echoerr v:shell_error
   endif
+  cal libperl#echo("ready")
 
-  let g:cpan_installed_module_list = readfile( g:cpan_installed_module_list_cache_file )
-  return g:cpan_installed_module_list
+  let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
+  return g:cpan_ins_mod_cache
+endf
 
+fun! libperl#get_installed_cpan_module_list(force)
+  return libperl#get_cpan_installed_module_list(a:force)
 endf
 
 " libperl#get_currentlib_cpan_module_list : 
@@ -510,22 +517,34 @@ endif
 
 
 " unit test functions
+let s:test_no = 1
 fun! s:list_ok(v)
-  if len(a:v)
-    echomsg 'list ok'
+  if len(a:v) > 0
+    echomsg 'list ok:' . s:test_no
   else
-    echomsg 'list fail'
+    echomsg 'list fail:' . s:test_no
   endif
+  let s:test_no += 1
 endf
 
 fun! s:dict_ok(v)
   if values(a:v) && keys( a:v )
-    echomsg 'dict ok'
+    echomsg 'dict ok:' . s:test_no
   else
-    echomsg 'dict fail'
+    echomsg 'dict fail' . s:test_no
   endif
+  let s:test_no += 1
 endf
 
 " test code
-" cal s:list_ok( libperl#get_cpan_module_list(0) )
-" cal s:list_ok( libperl#get_cpan_module_list(1) )
+"
+" cleanup
+" unlet g:cpan_ins_mod_cache
+" cal delete(g:cpan_ins_mod_cachef)
+
+"cal s:list_ok( libperl#get_cpan_module_list(0) )
+"cal s:list_ok( libperl#get_cpan_module_list(1) )
+"cal s:list_ok( libperl#get_cpan_installed_module_list(1) )
+"cal s:list_ok( libperl#get_cpan_installed_module_list(0) )
+echo libperl#get_cpan_installed_module_list(0)
+echo 'done'
