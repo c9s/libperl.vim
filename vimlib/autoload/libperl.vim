@@ -546,5 +546,5 @@ endf
 "cal s:list_ok( libperl#get_cpan_module_list(1) )
 "cal s:list_ok( libperl#get_cpan_installed_module_list(1) )
 "cal s:list_ok( libperl#get_cpan_installed_module_list(0) )
-echo libperl#get_cpan_installed_module_list(0)
-echo 'done'
+"echo libperl#get_cpan_installed_module_list(0)
+"echo 'done'
