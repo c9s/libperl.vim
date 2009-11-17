@@ -420,7 +420,7 @@ fun! libperl#get_cpan_module_list(force)
   let path =  libperl#get_package_sourcelist_path()
   if filereadable( path ) 
     cal libperl#echo("executing zcat: " . path )
-    let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_module_cache_file 
+    let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_mod_cachef
     cal system( cmd )
     if v:shell_error 
       echoerr v:shell_error
@@ -454,8 +454,6 @@ fun! libperl#get_cpan_installed_module_list(force)
 
   " update cache
   let paths = 'lib ' . join(libperl#get_perl_lib_paths(),' ')
-  echo paths
-  sleep 1
   cal libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
   cal system( 'find ' . paths . ' -type f -iname "*.pm" ' 
         \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
@@ -535,16 +533,3 @@ fun! s:dict_ok(v)
   endif
   let s:test_no += 1
 endf
-
-" test code
-"
-" cleanup
-" unlet g:cpan_ins_mod_cache
-" cal delete(g:cpan_ins_mod_cachef)
-
-"cal s:list_ok( libperl#get_cpan_module_list(0) )
-"cal s:list_ok( libperl#get_cpan_module_list(1) )
-"cal s:list_ok( libperl#get_cpan_installed_module_list(1) )
-"cal s:list_ok( libperl#get_cpan_installed_module_list(0) )
-"echo libperl#get_cpan_installed_module_list(0)
-"echo 'done'
