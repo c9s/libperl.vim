@@ -34,15 +34,12 @@
 let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
+" expiry by min
 fu! s:is_expired(file,expiry)
   let lt = localtime( )
   let ft = getftime( expand( a:file ) )
   let dist = lt - ft
-  if dist > a:expiry * 60 
-    return 1
-  else
-    return 0
-  endif
+  return dist > a:expiry * 60 
 endf
 
 fun! libperl#get_inc()
@@ -396,26 +393,39 @@ endf
 
 
 " libperl#get_cpan_module_list : 
-"   @force: 
+"   @force: override cache
 " 
 "   Return: cpan module list [list]
- 
+
+let g:cpan_module_cache_file = '.vim-cpan-module-cache'
 fun! libperl#get_cpan_module_list(force)
-  if a:force || ! filereadable( g:cpan_source_cache ) && s:is_expired( g:cpan_source_cache , g:cpan_cache_expiry  )
-    let path =  libperl#get_package_sourcelist_path()
-    if filereadable( path ) 
-      cal libperl#echo("executing zcat: " . path )
-      let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_source_cache 
-      let out = system( cmd )
-      if out 
-        echoerr out
-      endif
-      cal libperl#echo("cached: " . g:cpan_source_cache )
-    else 
-      echoerr "can not found sources from: " . path
-    endif
+  " check runtime cache
+  if a:force == 0 && exists('g:cpan_module_list')
+    return g:cpan_module_list
   endif
-  return readfile( g:cpan_source_cache )
+
+  " check file cache if we define a cache filename
+  if exists('g:cpan_module_list_cache_file')
+        \ && a:force == 0 
+        \ && filereadable(g:cpan_module_cache_file) 
+        \ && ! s:is_expired( g:cpan_module_cache_file , 60 )  " 60 min
+
+      let g:cpan_module_list = readfile( g:cpan_module_cache_file )
+      return g:cpan_module_list
+  endif
+
+  let path =  libperl#get_package_sourcelist_path()
+  if filereadable( path ) 
+    cal libperl#echo("executing zcat: " . path )
+    let cmd = 'cat ' . path . " | gunzip | grep -v '^[0-9a-zA-Z-]*: '  | cut -d' ' -f1 > " . g:cpan_module_cache_file 
+    cal system( cmd )
+    if v:shell_error 
+      echoerr v:shell_error
+    endif
+    cal libperl#echo("cached: " . g:cpan_module_cache_file )
+  endif
+  let g:cpan_module_list = readfile( g:cpan_module_cache_file )
+  return g:cpan_module_list
 endf
 
 " libperl#get_installed_cpan_module_list : 
