@@ -310,7 +310,6 @@ fun! libperl#parse_base_class_functions(filepath)
     let class_comp.functions = libperl#grep_file_functions( path )
     call add( result , class_comp )
   endfor
-  echo result
   return result
 endf
 
@@ -524,22 +523,3 @@ if has('perl')
 endif
 
 
-" unit test functions
-let s:test_no = 1
-fun! s:list_ok(v)
-  if len(a:v) > 0
-    echomsg 'list ok:' . s:test_no
-  else
-    echomsg 'list fail:' . s:test_no
-  endif
-  let s:test_no += 1
-endf
-
-fun! s:dict_ok(v)
-  if values(a:v) && keys( a:v )
-    echomsg 'dict ok:' . s:test_no
-  else
-    echomsg 'dict fail' . s:test_no
-  endif
-  let s:test_no += 1
-endf
