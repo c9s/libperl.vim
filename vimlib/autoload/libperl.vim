@@ -433,7 +433,6 @@ endf
 " 
 "   Return: installed cpan module list [list]
 
-" XXX:
 fun! libperl#get_installed_cpan_module_list(force)
   if ! filereadable( g:cpan_installed_cache ) && s:is_expired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
@@ -480,8 +479,7 @@ endf
 "
 fun! libperl#get_current_lib_package_name()
   let f = expand('%')
-  let pkg = substitute(matchstr(f ,'\(lib/\)\@<=.*\(.pm\)\@='),'/','::','g')
-  return pkg
+  return substitute(matchstr(f ,'\(lib/\)\@<=.*\(.pm\)\@='),'/','::','g')
 endf
 
 " if vim compiled with perl
@@ -490,6 +488,7 @@ if has('perl')
 endif
 
 
+" unit test functions
 fun! s:list_ok(v)
   if len(a:v)
     echomsg 'list ok'
@@ -509,4 +508,3 @@ endf
 " test code
 " cal s:list_ok( libperl#get_cpan_module_list(0) )
 " cal s:list_ok( libperl#get_cpan_module_list(1) )
-
