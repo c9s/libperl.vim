@@ -397,7 +397,7 @@ endf
 " 
 "   Return: cpan module list [list]
 
-let g:cpan_module_cache_file = '.vim-cpan-module-cache'
+let g:cpan_module_cache_file = expand('~/.vim-cpan-module-cache')
 fun! libperl#get_cpan_module_list(force)
   " check runtime cache
   if a:force == 0 && exists('g:cpan_module_list')
@@ -433,18 +433,39 @@ endf
 " 
 "   Return: installed cpan module list [list]
 
+let g:cpan_installed_module_list_cache_file = expand('~/.vim-cpan-installed-module-cache')
 fun! libperl#get_installed_cpan_module_list(force)
-  if ! filereadable( g:cpan_installed_cache ) && s:is_expired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
-    let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
-    call libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
-    call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
+  " check runtime cache
+  if a:force == 0 && exists('g:cpan_installed_module_list')
+    return g:cpan_installed_module_list
+  endif
+
+  " check file cache if we define a cache filename
+  if exists('g:cpan_installed_module_list_cache_file')
+        \ && a:force == 0 
+        \ && filereadable(g:cpan_installed_module_list_cache_file) 
+        \ && ! s:is_expired( g:cpan_installed_module_list_cache_file , 60 )  " 60 min
+      " cache it
+      let g:cpan_installed_module_list = readfile( g:cpan_installed_module_list_cache_file )
+      return g:cpan_installed_module_list
+  endif
+
+  " update cache
+  let path =  libperl#get_package_sourcelist_path()
+  if filereadable( path ) 
+    let paths = 'lib ' . join(libperl#get_perl_lib_paths(),' ')
+    cal libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
+    cal system( 'find ' . paths . ' -type f -iname "*.pm" ' 
           \ . " | xargs -I{} head {} | egrep -o 'package [_a-zA-Z0-9:]+;' "
           \ . " | perl -pe 's/^package (.*?);/\$1/' "
-          \ . " | sort | uniq > " . g:cpan_installed_cache )
-    " sed  's/^package //' | sed 's/;$//'
-    call libperl#echo("ready")
+          \ . " | sort | uniq > " . g:cpan_installed_module_list_cache_file )
+
+    cal libperl#echo("ready")
   endif
-  return readfile( g:cpan_installed_cache )
+
+  let g:cpan_installed_module_list = readfile( g:cpan_installed_module_list_cache_file )
+  return g:cpan_installed_module_list
+
 endf
 
 " libperl#get_currentlib_cpan_module_list : 
