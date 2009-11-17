@@ -7,7 +7,7 @@
 " Web:    http://oulixe.us
 " Github: http://github.com/c9s
 " Mail:   cornelius.howl@DELETE-ME.gmail.com
-"
+" Version: 0.4
 
 " Script Variables:
 " 
@@ -34,6 +34,18 @@
 let g:libperl#lib_version = 0.3
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
+fu! s:is_expired(file,expiry)
+  let lt = localtime( )
+  let ft = getftime( expand( a:file ) )
+  let dist = lt - ft
+  if dist > a:expiry * 60 
+    return 1
+  else
+    return 0
+  endif
+endf
+
+
 fun! libperl#echo(msg)
   redraw
   echomsg a:msg
@@ -44,7 +56,12 @@ endf
 "       return paths from perl @INC 
 
 fun! libperl#get_perl_lib_paths()
-  return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
+  let l:path = &path
+  if strlen(l:path) > 1 
+    return split( l:path , ',')
+  else
+    return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
+  endif
 endf
 
 " libperl#get_module_file_path :
@@ -252,9 +269,14 @@ fun! libperl#find_base_classes(file)
     return [ ]
   endif
 
-  let out = system('perl ' . script_path . ' ' . a:file)
+  let cmd = join(['perl' , script_path , a:file ], ' ')
+  let out = system( cmd )
+
   if v:shell_error
-    echo 'syntax error can not parse file:' . a:file
+    echo 'shell error:' . v:shell_error
+    echo 'syntax error can not parse file:' . a:file 
+    echo cmd
+    sleep 5
     return 
   endif
   
@@ -378,7 +400,7 @@ endf
 "   Return: cpan module list [list]
  
 fun! libperl#get_cpan_module_list(force)
-  if a:force || ! filereadable( g:cpan_source_cache ) && IsExpired( g:cpan_source_cache , g:cpan_cache_expiry  )
+  if a:force || ! filereadable( g:cpan_source_cache ) && s:is_expired( g:cpan_source_cache , g:cpan_cache_expiry  )
     let path =  libperl#get_package_sourcelist_path()
     if filereadable( path ) 
       cal libperl#echo("executing zcat: " . path )
@@ -399,9 +421,10 @@ endf
 "   @force: 
 " 
 "   Return: installed cpan module list [list]
- 
+
+" XXX:
 fun! libperl#get_installed_cpan_module_list(force)
-  if ! filereadable( g:cpan_installed_cache ) && IsExpired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
+  if ! filereadable( g:cpan_installed_cache ) && s:is_expired( g:cpan_installed_cache , g:cpan_cache_expiry ) || a:force
     let paths = 'lib ' .  system('perl -e ''print join(" ",@INC)''  ')
     call libperl#echo("finding packages from @INC... This might take a while. Press Ctrl-C to stop.")
     call system( 'find ' . paths . ' -type f -iname "*.pm" ' 
@@ -421,7 +444,7 @@ endf
  
 fun! libperl#get_currentlib_cpan_module_list(force)
   let cpan_curlib_cache = expand( '~/.vim/' . tolower( substitute( getcwd() , '/' , '.' , 'g') ) )
-  if ! filereadable( cpan_curlib_cache ) && IsExpired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
+  if ! filereadable( cpan_curlib_cache ) && s:is_expired( cpan_curlib_cache , g:cpan_cache_expiry ) || a:force
     call libperl#echo( "finding packages... from lib/" )
 
     if exists('use_pcre_grep') 
