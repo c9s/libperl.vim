@@ -45,6 +45,10 @@ fu! s:is_expired(file,expiry)
   endif
 endf
 
+fun! libperl#get_inc()
+  echoerr "libperl#get_inc is deprecated."
+  return ""
+endf
 
 fun! libperl#echo(msg)
   redraw
@@ -63,6 +67,8 @@ fun! libperl#get_perl_lib_paths()
     return split( system('perl -e ''print join "\n",@INC''') , "\n" ) 
   endif
 endf
+
+
 
 " libperl#get_module_file_path :
 "   @mod[String]: package name
@@ -212,16 +218,11 @@ fun! libperl#open_module_in_paths(mod)
   echomsg "No such module: " . a:mod
 endf
 
-" libperl#get_inc : 
- 
-fun! libperl#get_inc()
-  return system('perl -e ''print join(" ",@INC)'' ')
-endf
 
 " libperl#find_perl_package_files : 
  
 fun! libperl#find_perl_package_files()
-  let paths = 'lib ' .  libperl#get_inc()
+  let paths = 'lib ' .  join(libperl#get_perl_lib_paths(),' ')
   let pkgs = split("\n" , system(  'find ' . paths . ' -type f -iname *.pm ' 
         \ . " | xargs -I{} egrep -o 'package [_a-zA-Z0-9:]+;' {} "
         \ . " | perl -pe 's/^package (.*?);/\$1/' "
