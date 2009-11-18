@@ -10,6 +10,8 @@
 
 =vim_version    >= 7.2
 
+=script_id      2824
+
 =dependency
 
 =script

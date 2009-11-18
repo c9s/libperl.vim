@@ -11,13 +11,14 @@
 
 
 # -------- meta section ------
+EMAIL = cornelius.howl@gmail.com
 REPOSITORY = git://....../
-VERSION = 0.4
+VERSION = 0.6
 NAME = libperl.vim
 AUTHOR = Cornelius
 TYPE = autoload
 VERSION_FROM = vimlib/autoload/libperl.vim
-DISTNAME = libperl-vim-0.4
+DISTNAME = libperl-vim-0.6
 VIM_VERSION = 7.2
 
 
@@ -40,7 +41,7 @@ NOECHO = @
 NOOP = $(TRUE)
 PERLFLAGS =  -Ilib 
 PWD = `pwd`
-README =  README
+README = 
 RM_F = rm -vf
 RM_RF = rm -rf
 TAR = COPY_EXTENDED_ATTRIBUTES_DISABLE=1 COPYFILE_DISABLE=1 tar
@@ -119,8 +120,7 @@ help :
 		perldoc VIM::Packager
 
 uninstall : 
-		$(RM_F) $(VIM_BASEDIR)/doc/libperl.vim.txt
-		$(RM_F) $(VIM_BASEDIR)/autoload/libperl.vim
+		$(NOECHO) $(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Installer=uninstall   -e 'uninstall()' $(NAME)
 
 upload : dist
 		$(FULLPERL) $(PERLFLAGS) -MVIM::Packager::Uploader=upload -e 'upload()' $(PWD)/$(DISTNAME).tar.gz \
