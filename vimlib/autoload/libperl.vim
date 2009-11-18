@@ -401,6 +401,8 @@ endf
 
 let g:cpan_mod_cachef = expand('~/.vim-cpan-module-cache')
 let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
+let g:cpan_cache_expiry = 60 * 24 * 14
+
 fun! libperl#get_cpan_module_list(force)
   " check runtime cache
   if a:force == 0 && exists('g:cpan_mod_cache')
@@ -411,7 +413,7 @@ fun! libperl#get_cpan_module_list(force)
   if exists('g:cpan_mod_cachef')
         \ && a:force == 0 
         \ && filereadable(g:cpan_mod_cachef) 
-        \ && ! s:is_expired( g:cpan_mod_cachef , 60 )  " 60 min
+        \ && ! s:is_expired( g:cpan_mod_cachef , g:cpan_cache_expiry )  
 
       let g:cpan_mod_cache = readfile( g:cpan_mod_cachef )
       return g:cpan_mod_cache
@@ -441,7 +443,7 @@ fun! libperl#get_cpan_installed_module_list(force)
   if exists('g:cpan_ins_mod_cachef')
         \ && a:force == 0 
         \ && filereadable( g:cpan_ins_mod_cachef ) 
-        \ && ! s:is_expired( g:cpan_ins_mod_cachef , 60 )
+        \ && ! s:is_expired( g:cpan_ins_mod_cachef , g:cpan_cache_expiry )
       let g:cpan_ins_mod_cache = readfile( g:cpan_ins_mod_cachef )
       return g:cpan_ins_mod_cache
   endif
@@ -488,7 +490,7 @@ fun! libperl#get_path_module_list(path,force)
     let g:cpan_path_cache = { }
   endif
 
-  if a:force == 0 && filereadable( cpan_path_cachef ) && ! s:is_expired( cpan_path_cachef , 60 )
+  if a:force == 0 && filereadable( cpan_path_cachef ) && ! s:is_expired( cpan_path_cachef , g:cpan_cache_expiry )
     let g:cpan_path_cache[ a:path ] = readfile( cpan_path_cachef )
     return g:cpan_path_cache[ a:path ]
   endif
