@@ -11,13 +11,14 @@
 
 
 # -------- meta section ------
-EMAIL = cornelius.howl@gmail.com
 REPOSITORY = git://....../
 VERSION = 0.6
 NAME = libperl.vim
 AUTHOR = Cornelius
-TYPE = autoload
 VERSION_FROM = vimlib/autoload/libperl.vim
+EMAIL = cornelius.howl@gmail.com
+TYPE = autoload
+SCRIPT_ID = 2824
 DISTNAME = libperl-vim-0.6
 VIM_VERSION = 7.2
 

@@ -274,11 +274,9 @@ fun! libperl#find_base_classes(file)
   let out = system( cmd )
 
   if v:shell_error
-    echo 'shell error:' . v:shell_error
-    echo 'syntax error can not parse file:' . a:file 
-    echo cmd
-    sleep 5
-    return 
+    echoerr 'shell error:' . v:shell_error
+    echoerr 'syntax error can not parse file:' . a:file 
+    return []
   endif
   
   let classes = [ ]
