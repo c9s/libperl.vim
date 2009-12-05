@@ -8,7 +8,7 @@
 " Web:    http://oulixe.us
 " Github: http://github.com/c9s
 " Mail:   cornelius.howl@DELETE-ME.gmail.com
-" Version: 0.6
+" Version: 0.7
 
 " Script Variables:
 " 
@@ -32,7 +32,7 @@
 "     g:cpan_installed_cache : 
 "     g:cpan_cache_expiry : 
  
-let g:libperl#lib_version = 0.3
+let g:libperl#lib_version = 0.7
 let g:libperl#pkg_token_pattern = '\w[a-zA-Z0-9:_]\+'
 
 " expiry by min
@@ -399,7 +399,7 @@ endf
 
 let g:cpan_mod_cachef = expand('~/.vim-cpan-module-cache')
 let g:cpan_ins_mod_cachef = expand('~/.vim-cpan-installed-module-cache')
-let g:cpan_cache_expiry = 60 * 24 * 14
+let g:cpan_cache_expiry = 60 * 24 * 20
 
 fun! libperl#get_cpan_module_list(force)
   " check runtime cache
