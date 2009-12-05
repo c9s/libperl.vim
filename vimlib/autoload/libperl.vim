@@ -8,7 +8,7 @@
 " Web:    http://oulixe.us
 " Github: http://github.com/c9s
 " Mail:   cornelius.howl@DELETE-ME.gmail.com
-" Version: 0.71
+" Version: 0.72
 
 " Script Variables:
 " 
@@ -21,15 +21,7 @@
 "     g:cpan_win_type : 
 "     g:libperl#pkg_token_pattern : 
 "     g:cpan_install_command : 
-"     g:cpan_install_command : 
 "     g:cpan_user_defined_sources : 
-"     g:cpan_user_defined_sources : 
-"     g:cpan_source_cache : 
-"     g:cpan_source_cache : 
-"     g:cpan_source_cache : 
-"     g:cpan_installed_cache : 
-"     g:cpan_installed_cache : 
-"     g:cpan_installed_cache : 
 "     g:cpan_cache_expiry : 
  
 let g:libperl#lib_version = 0.7
