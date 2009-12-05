@@ -477,7 +477,13 @@ endf
 fun! libperl#get_path_module_list(path,force)
   let cache_name = a:path
   let cache_name =  tolower( substitute( cache_name , '/' , '.' , 'g') )
-  let cpan_path_cachef = expand( '~/.vim' ) . cache_name
+
+  let cache_dir = expand('~/.vim/cache/')
+  if ! isdirectory( cache_dir )
+    cal mkdir( cache_dir )
+  endif
+
+  let cpan_path_cachef = cache_dir . cache_name
 
   " cache for differnet path
   if a:force == 0 && exists('g:cpan_path_cache') && exists('g:cpan_path_cache[ a:path ]') 
